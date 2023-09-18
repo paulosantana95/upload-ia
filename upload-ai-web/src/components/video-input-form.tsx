@@ -17,7 +17,11 @@ const statusMessages = {
   success: "Sucesso!",
 };
 
-export function VideoInputForm() {
+interface VideoInputFormProps {
+  onVideoUploaded: (videoId: string) => void;
+}
+
+export function VideoInputForm({ onVideoUploaded }: VideoInputFormProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("waiting");
 
@@ -97,13 +101,15 @@ export function VideoInputForm() {
 
     const videoId = response.data.video.id;
 
-    setStatus("generations");
+    setStatus("generating");
 
     await api.post(`videos/${videoId}/transcription`, {
       prompt,
     });
 
-    console.log("success");
+    setStatus("success");
+
+    onVideoUploaded(videoId);
   }
 
   const previewURL = useMemo(() => {
@@ -116,7 +122,7 @@ export function VideoInputForm() {
 
   return (
     <form onSubmit={handleUploadVideo} className="space-y-6">
-      <label
+      <Label
         htmlFor="video"
         className="relative border flex rounded-md aspect-video cursor-pointer border-dashed text-sm flex-col gap-2 items-center justify-center text-muted-foreground hover:bg-primary/5">
         {previewURL ? (
@@ -131,7 +137,7 @@ export function VideoInputForm() {
             Selecione um vídeo
           </>
         )}
-      </label>
+      </Label>
 
       <input
         type="file"
